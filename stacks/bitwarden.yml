@@ -1,0 +1,22 @@
+# docker-compose.yml
+version: '2'
+
+services:
+  bitwarden:
+    image: bitwardenrs/server:latest
+    container_name: bitwarden
+    restart: always
+    volumes:
+      - /portainer/AppData/Bitwarden-rs/Data:/data
+    environment:
+      DOMAIN: ${DOMAIN}
+    ports: [
+      '${PORT}:80/tcp'
+      ]
+  backup:
+    image: bruceforce/bw_backup:latest
+    container_name: bitwarden_backup
+    restart: always
+    volumes:
+      - /portainer/AppData/Bitwarden-rs/Data:/data
+    

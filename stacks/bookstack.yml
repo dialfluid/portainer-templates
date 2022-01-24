@@ -1,0 +1,48 @@
+---
+version: "2"
+services:
+  bookstack:
+    image: ghcr.io/linuxserver/bookstack:version-v0.30.7
+    container_name: bookstack
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - APP_URL=${APP_URL}
+      - DB_HOST=bookstack_db
+      - DB_USER=bookstack
+      - DB_PASS=${DATABASE_PASSWORD}
+      - DB_DATABASE=bookstackapp
+    volumes:
+      - ${BS_VOLUME}:/config
+    ports:
+      - ${PORT}:80
+    restart: unless-stopped
+    depends_on:
+      - bookstack_db
+# https://medium.com/@ricardolsmendes/mysql-mariadb-with-scheduled-backup-jobs-running-in-docker-1956e9892e78
+  bookstack_db:
+    image: ghcr.io/linuxserver/mariadb:version-110.4.17mariabionic
+    container_name: bookstack_db
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - TZ=${TZ}
+      - MYSQL_DATABASE=bookstackapp
+      - MYSQL_USER=bookstack
+      - MYSQL_PASSWORD=${DATABASE_PASSWORD}
+    volumes:
+      - ${DB_VOLUME}:/config
+    restart: unless-stopped
+  bookstack_db_backup:
+    build: /periodic-backup
+    container_name: bookstack_db_backup
+    environment:
+      MYSQL_CONTAINER_NAME: bookstack_db
+      MYSQL_DATABASE: bookstackapp
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${BACKUP_VOLUME}:/opt/mysql/backup
+    command: crond -f -d 8
+    restart: unless-stopped
