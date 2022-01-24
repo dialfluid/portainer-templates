@@ -1,6 +1,6 @@
 # Portainer App Templates
 
-Templates for Portainer apps.
+Template for Portainer apps.
 
 # Acknowledgement
 * Portainer's default templates
